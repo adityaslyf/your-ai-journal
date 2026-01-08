@@ -1,27 +1,49 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useAuth } from '@clerk/clerk-expo'
+import { Image } from 'expo-image'
+import { useRouter } from 'expo-router'
+import { Platform, TouchableOpacity } from 'react-native'
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { HelloWave } from '@/components/hello-wave'
+import ParallaxScrollView from '@/components/parallax-scroll-view'
+import { ThemedText } from '@/components/themed-text'
+import { ThemedView } from '@/components/themed-view'
+import { Link } from 'expo-router'
 
 export default function HomeScreen() {
+  const { signOut } = useAuth()
+  const router = useRouter()
+
+  const handleSignOut = async () => {
+    try {
+      await signOut()
+      router.replace('/(auth)/sign-in')
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
+  }
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
       headerImage={
         <Image
           source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+          className="h-[178px] w-[290px] absolute bottom-0 left-0"
         />
       }>
-      <ThemedView style={styles.titleContainer}>
+      <ThemedView className="flex-row items-center gap-2">
         <ThemedText type="title">Welcome!</ThemedText>
         <HelloWave />
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
+
+      {/* Sign Out Button */}
+      <TouchableOpacity
+        onPress={handleSignOut}
+        className="bg-red-600 rounded-lg py-3 px-6 mb-4 active:bg-red-700">
+        <ThemedText className="text-white text-center font-semibold">Sign Out</ThemedText>
+      </TouchableOpacity>
+      
+      <ThemedView className="gap-2 mb-2">
         <ThemedText type="subtitle">Step 1: Try it</ThemedText>
         <ThemedText>
           Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
@@ -36,8 +58,9 @@ export default function HomeScreen() {
           to open developer tools.
         </ThemedText>
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
+      
+      <ThemedView className="gap-2 mb-2">
+        <Link href="/(app)/modal">
           <Link.Trigger>
             <ThemedText type="subtitle">Step 2: Explore</ThemedText>
           </Link.Trigger>
@@ -64,7 +87,8 @@ export default function HomeScreen() {
           {`Tap the Explore tab to learn more about what's included in this starter app.`}
         </ThemedText>
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
+      
+      <ThemedView className="gap-2 mb-2">
         <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
         <ThemedText>
           {`When you're ready, run `}
@@ -75,24 +99,5 @@ export default function HomeScreen() {
         </ThemedText>
       </ThemedView>
     </ParallaxScrollView>
-  );
+  )
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});

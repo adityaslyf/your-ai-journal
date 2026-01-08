@@ -1,18 +1,25 @@
+import { ClerkProvider } from '@clerk/clerk-expo'
+import { tokenCache } from '@clerk/clerk-expo/token-cache'
+import { Slot } from 'expo-router'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import '../global.css'
 
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native'
-import { Stack } from 'expo-router'
 import { useColorScheme } from 'react-native'
 
 export default function RootLayout() {
   const colorScheme = useColorScheme()
 
   return (
+    <SafeAreaProvider>
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
+      <ClerkProvider 
+        publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!}
+        tokenCache={tokenCache}
+      >
+        <Slot />
+      </ClerkProvider>
     </ThemeProvider>
+    </SafeAreaProvider>
   )
 }
