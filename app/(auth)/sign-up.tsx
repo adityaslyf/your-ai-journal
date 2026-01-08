@@ -1,10 +1,14 @@
-import { useSignUp } from '@clerk/clerk-expo'
+import { useOAuth, useSignUp } from '@clerk/clerk-expo'
 import { Link, useRouter } from 'expo-router'
+import * as WebBrowser from 'expo-web-browser'
 import * as React from 'react'
 import { Alert, Text, TextInput, TouchableOpacity, View } from 'react-native'
 
+WebBrowser.maybeCompleteAuthSession()
+
 export default function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp()
+  const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' })
   const router = useRouter()
 
   const [emailAddress, setEmailAddress] = React.useState('')
@@ -37,10 +41,9 @@ export default function SignUpScreen() {
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' })
       setPendingVerification(true)
       
-      // Show development mode hint
       Alert.alert(
         'Verification Code Sent!', 
-        'Check your email for the code.\n\n💡 Development tip: If you don\'t receive an email, Clerk may be in development mode. Check your Clerk dashboard or try using a test code like "424242".',
+        'Check your email for the code.\n\n💡 Development tip: If you don\'t receive an email, check your spam folder or Clerk dashboard.',
         [{ text: 'OK' }]
       )
     } catch (err: any) {
@@ -83,6 +86,20 @@ export default function SignUpScreen() {
     }
   }
 
+  const onGoogleSignUp = async () => {
+    try {
+      const { createdSessionId, setActive } = await startOAuthFlow()
+
+      if (createdSessionId) {
+        setActive!({ session: createdSessionId })
+        router.replace('/')
+      }
+    } catch (err: any) {
+      console.error('OAuth error:', err)
+      Alert.alert('Sign Up Error', 'Failed to sign up with Google. Please try again.')
+    }
+  }
+
   if (pendingVerification) {
     return (
       <View className="flex-1 justify-center px-6 bg-white dark:bg-gray-900">
@@ -96,7 +113,7 @@ export default function SignUpScreen() {
         
         <View className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
           <Text className="text-yellow-800 dark:text-yellow-200 text-sm">
-            💡 <Text className="font-semibold">Development Mode:</Text> If you don't receive an email, check your Clerk dashboard for the verification code or contact support.
+            💡 <Text className="font-semibold">Tip:</Text> Check your spam folder if you don't see the email.
           </Text>
         </View>
         
@@ -134,6 +151,21 @@ export default function SignUpScreen() {
   return (
     <View className="flex-1 justify-center px-6 bg-white dark:bg-gray-900">
       <Text className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">Sign Up</Text>
+      
+      {/* Google Sign Up Button */}
+      <TouchableOpacity
+        onPress={onGoogleSignUp}
+        className="flex-row items-center justify-center bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg py-3 mb-6 active:bg-gray-50 dark:active:bg-gray-700">
+        <Text className="text-lg mr-2">🔍</Text>
+        <Text className="text-gray-900 dark:text-white font-semibold">Continue with Google</Text>
+      </TouchableOpacity>
+
+      {/* Divider */}
+      <View className="flex-row items-center mb-6">
+        <View className="flex-1 h-[1px] bg-gray-300 dark:bg-gray-700" />
+        <Text className="mx-4 text-gray-500 dark:text-gray-400">or</Text>
+        <View className="flex-1 h-[1px] bg-gray-300 dark:bg-gray-700" />
+      </View>
       
       <TextInput
         autoCapitalize="none"
