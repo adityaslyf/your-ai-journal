@@ -9,6 +9,7 @@ import { JournalEntry, JournalFeedItem } from '@/components/JournalFeedItem'
 import { StreakCard } from '@/components/StreakCard'
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
+import { useStreak } from '@/hooks/use-streak'
 import { generateApiUrl } from '@/lib/utlis/generateApiUrl'
 import { useAppUser } from '@/lib/utlis/user'
 
@@ -19,49 +20,9 @@ export default function HomeScreen() {
   
   const [entries, setEntries] = useState<JournalEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [streak, setStreak] = useState(0)
-  const [streakActive, setStreakActive] = useState(false)
-
-  const calculateStreak = useCallback((data: JournalEntry[]) => {
-    if (!data.length) {
-      setStreak(0)
-      setStreakActive(false)
-      return
-    }
-
-    const uniqueDates = new Set(data.map(e => e.createdAt.split('T')[0]))
-    const today = new Date().toISOString().split('T')[0]
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
-    
-    let currentStreak = 0
-    let checkDate = new Date()
-    
-    // Check if streak is kept alive
-    if (!uniqueDates.has(today) && !uniqueDates.has(yesterday)) {
-      setStreak(0)
-      setStreakActive(false)
-      return
-    }
-
-    // Iterate backwards up to 365 days
-    for (let i = 0; i < 365; i++) {
-      const dateStr = checkDate.toISOString().split('T')[0]
-      
-      if (uniqueDates.has(dateStr)) {
-        currentStreak++
-        checkDate.setDate(checkDate.getDate() - 1)
-      } else {
-        if (dateStr === today && uniqueDates.has(yesterday)) {
-          checkDate.setDate(checkDate.getDate() - 1)
-          continue
-        }
-        break
-      }
-    }
-
-    setStreak(currentStreak)
-    setStreakActive(uniqueDates.has(today))
-  }, [])
+  
+  // Use the streak hook - automatically calculates when entries change
+  const { streak, isActive: streakActive } = useStreak(entries)
 
   const fetchEntries = useCallback(async () => {
     if (!userId) {
@@ -79,13 +40,13 @@ export default function HomeScreen() {
       
       const fetchedEntries: JournalEntry[] = data.result || []
       setEntries(fetchedEntries)
-      calculateStreak(fetchedEntries)
+      // Streak is automatically calculated by useStreak hook
     } catch (error) {
       console.error('Failed to fetch entries:', error)
     } finally {
       setIsLoading(false)
     }
-  }, [userId, calculateStreak])
+  }, [userId])
 
   useFocusEffect(
     useCallback(() => {
