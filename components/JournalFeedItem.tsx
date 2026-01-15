@@ -1,6 +1,7 @@
-import { View } from 'react-native'
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
+import { buildImageUrl } from '@/lib/utlis/sanity/image'
+import { Image, View } from 'react-native'
 
 export interface JournalEntry {
   _id: string
@@ -8,6 +9,12 @@ export interface JournalEntry {
   moodRating: number
   createdAt: string
   aiCategories?: string[]
+  image?: {
+    asset: {
+      _ref: string
+      _type: 'reference'
+    }
+  }
 }
 
 export function JournalFeedItem({ entry }: { entry: JournalEntry }) {
@@ -19,33 +26,44 @@ export function JournalFeedItem({ entry }: { entry: JournalEntry }) {
   })
   
   const moodEmoji = entry.moodRating >= 8 ? '😊' : entry.moodRating >= 5 ? '😐' : '😔'
+  const imageUrl = entry.image ? buildImageUrl(entry.image, 400, 200) : null
 
   return (
-    <ThemedView className="p-4 rounded-xl mb-3 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
-      <View className="flex-row justify-between items-start mb-2">
-        <View className="flex-1 mr-2">
-          <ThemedText type="subtitle" numberOfLines={1}>{entry.title}</ThemedText>
-          <ThemedText className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            {formattedDate}
-          </ThemedText>
-        </View>
-        <View className="items-center bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-lg">
-          <ThemedText>{moodEmoji}</ThemedText>
-          <ThemedText className="text-xs font-bold mt-0.5">{entry.moodRating}/10</ThemedText>
-        </View>
-      </View>
-      
-      {entry.aiCategories && entry.aiCategories.length > 0 && (
-        <View className="flex-row flex-wrap gap-2 mt-2">
-          {entry.aiCategories.map((cat, index) => (
-            <View key={index} className="bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 rounded-full">
-              <ThemedText className="text-xs text-blue-700 dark:text-blue-300">
-                #{cat}
-              </ThemedText>
-            </View>
-          ))}
-        </View>
+    <ThemedView className="rounded-xl mb-3 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 overflow-hidden">
+      {imageUrl && (
+        <Image 
+          source={{ uri: imageUrl }} 
+          className="w-full h-40"
+          resizeMode="cover"
+        />
       )}
+      
+      <View className="p-4">
+        <View className="flex-row justify-between items-start mb-2">
+          <View className="flex-1 mr-2">
+            <ThemedText type="subtitle" numberOfLines={1}>{entry.title}</ThemedText>
+            <ThemedText className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              {formattedDate}
+            </ThemedText>
+          </View>
+          <View className="items-center bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-lg">
+            <ThemedText>{moodEmoji}</ThemedText>
+            <ThemedText className="text-xs font-bold mt-0.5">{entry.moodRating}/10</ThemedText>
+          </View>
+        </View>
+        
+        {entry.aiCategories && entry.aiCategories.length > 0 && (
+          <View className="flex-row flex-wrap gap-2 mt-2">
+            {entry.aiCategories.map((cat, index) => (
+              <View key={index} className="bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 rounded-full">
+                <ThemedText className="text-xs text-blue-700 dark:text-blue-300">
+                  #{cat}
+                </ThemedText>
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
     </ThemedView>
   )
 }

@@ -15,6 +15,15 @@ export const journalEntry = defineType({
       validation: (rule) => rule.required().max(100).warning('Keep titles concise for better readability'),
     }),
     defineField({
+      name: 'image',
+      title: 'Cover Image',
+      type: 'image',
+      description: 'Optional cover image for your journal entry',
+      options: {
+        hotspot: true,
+      },
+    }),
+    defineField({
       name: 'content',
       title: 'Content',
       type: 'array',

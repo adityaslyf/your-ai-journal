@@ -32,7 +32,19 @@ export default function HomeScreen() {
 
     try {
       setIsLoading(true)
-      const query = `*[_type == "journalEntry" && userId == $userId] | order(createdAt desc)`
+      const query = `*[_type == "journalEntry" && userId == $userId] | order(createdAt desc) {
+        _id,
+        title,
+        moodRating,
+        createdAt,
+        aiCategories,
+        image {
+          asset -> {
+            _id,
+            url
+          }
+        }
+      }`
       const url = generateApiUrl(query, { userId })
       
       const response = await fetch(url)

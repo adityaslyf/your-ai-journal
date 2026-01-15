@@ -1,11 +1,13 @@
 import { Ionicons } from '@expo/vector-icons'
+import * as ImagePicker from 'expo-image-picker'
 import { useRouter } from 'expo-router'
 import { useState } from 'react'
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, TextInput, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, ScrollView, TextInput, TouchableOpacity, View } from 'react-native'
 
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
 import { sanityConfig } from '@/lib/utlis/generateApiUrl'
+import { uploadImageToSanity } from '@/lib/utlis/sanity/image'
 import { useAppUser } from '@/lib/utlis/user'
 
 export default function NewEntryScreen() {
@@ -14,7 +16,28 @@ export default function NewEntryScreen() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [mood, setMood] = useState(5)
+  const [imageUri, setImageUri] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Please grant camera roll permissions to upload images')
+      return
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [16, 9],
+      quality: 0.8,
+    })
+
+    if (!result.canceled && result.assets[0]) {
+      setImageUri(result.assets[0].uri)
+    }
+  }
 
   const handleSubmit = async () => {
     if (!title.trim() || !content.trim()) {
@@ -29,11 +52,18 @@ export default function NewEntryScreen() {
 
     setIsSubmitting(true)
     try {
+      let imageAsset = null
+      
+      if (imageUri) {
+        imageAsset = await uploadImageToSanity(imageUri)
+      }
+
       const mutations = [
         {
           create: {
             _type: 'journalEntry',
             title: title.trim(),
+            ...(imageAsset && { image: { _type: 'image', asset: imageAsset } }),
             content: [
               {
                 _type: 'block',
@@ -126,6 +156,29 @@ export default function NewEntryScreen() {
               placeholderTextColor="#9CA3AF"
               className="text-xl font-bold p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-900 dark:text-white"
             />
+          </View>
+
+          <View className="mb-6">
+            <ThemedText className="mb-2 font-medium opacity-70">Cover Image</ThemedText>
+            {imageUri ? (
+              <View className="relative">
+                <Image source={{ uri: imageUri }} className="w-full h-48 rounded-lg" resizeMode="cover" />
+                <TouchableOpacity
+                  onPress={() => setImageUri(null)}
+                  className="absolute top-2 right-2 bg-red-500 rounded-full p-2"
+                >
+                  <Ionicons name="close" size={20} color="white" />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity
+                onPress={pickImage}
+                className="h-48 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 items-center justify-center"
+              >
+                <Ionicons name="image-outline" size={48} color="#9CA3AF" />
+                <ThemedText className="mt-2 text-gray-500 dark:text-gray-400">Tap to add image</ThemedText>
+              </TouchableOpacity>
+            )}
           </View>
 
           <View className="mb-6">
