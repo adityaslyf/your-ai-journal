@@ -1,7 +1,6 @@
-import { useAuth } from '@clerk/clerk-expo'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
-import { Link, useFocusEffect, useRouter } from 'expo-router'
+import { Link, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
 import { ActivityIndicator, ScrollView, TouchableOpacity, View } from 'react-native'
 
@@ -14,8 +13,6 @@ import { generateApiUrl } from '@/lib/utlis/generateApiUrl'
 import { useAppUser } from '@/lib/utlis/user'
 
 export default function HomeScreen() {
-  const { signOut } = useAuth()
-  const router = useRouter()
   const { userId, user } = useAppUser()
   
   const [entries, setEntries] = useState<JournalEntry[]>([])
@@ -66,15 +63,6 @@ export default function HomeScreen() {
     }, [fetchEntries])
   )
 
-  const handleSignOut = async () => {
-    try {
-      await signOut()
-      router.replace('/(auth)/sign-in')
-    } catch (error) {
-      console.error('Error signing out:', error)
-    }
-  }
-
   return (
     <View className="flex-1 bg-white dark:bg-gray-900">
       <ScrollView className="flex-1" contentContainerClassName="pb-24">
@@ -87,14 +75,9 @@ export default function HomeScreen() {
         </View>
 
         <ThemedView className="flex-1 p-8 -mt-6 bg-white dark:bg-gray-900 rounded-t-3xl">
-          <View className="flex-row items-center justify-between mb-6">
-            <View>
-              <ThemedText type="title">Hi, {user?.fullName?.split(' ')[0] || 'There'}! 👋</ThemedText>
-              <ThemedText className="text-gray-500 dark:text-gray-400">Ready to reflect today?</ThemedText>
-            </View>
-            <TouchableOpacity onPress={handleSignOut} className="bg-gray-200 dark:bg-gray-800 p-2 rounded-full">
-              <Ionicons name="log-out-outline" size={20} color="#666" />
-            </TouchableOpacity>
+          <View className="mb-6">
+            <ThemedText type="title">Hi, {user?.fullName?.split(' ')[0] || 'There'}! 👋</ThemedText>
+            <ThemedText className="text-gray-500 dark:text-gray-400">Ready to reflect today?</ThemedText>
           </View>
 
           <StreakCard streak={streak} isActive={streakActive} />

@@ -1,7 +1,8 @@
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
 import { buildImageUrl } from '@/lib/utlis/sanity/image'
-import { Image, View } from 'react-native'
+import { useRouter } from 'expo-router'
+import { Image, TouchableOpacity, View } from 'react-native'
 
 export interface JournalEntry {
   _id: string
@@ -18,6 +19,7 @@ export interface JournalEntry {
 }
 
 export function JournalFeedItem({ entry }: { entry: JournalEntry }) {
+  const router = useRouter()
   const date = new Date(entry.createdAt)
   const formattedDate = date.toLocaleDateString('en-US', {
     weekday: 'short',
@@ -29,7 +31,11 @@ export function JournalFeedItem({ entry }: { entry: JournalEntry }) {
   const imageUrl = entry.image ? buildImageUrl(entry.image, 400, 200) : null
 
   return (
-    <ThemedView className="rounded-xl mb-3 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 overflow-hidden">
+    <TouchableOpacity
+      onPress={() => router.push(`/(app)/journal/${entry._id}`)}
+      activeOpacity={0.7}
+    >
+      <ThemedView className="rounded-xl mb-3 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 overflow-hidden">
       {imageUrl && (
         <Image 
           source={{ uri: imageUrl }} 
@@ -65,6 +71,7 @@ export function JournalFeedItem({ entry }: { entry: JournalEntry }) {
         )}
       </View>
     </ThemedView>
+    </TouchableOpacity>
   )
 }
 
