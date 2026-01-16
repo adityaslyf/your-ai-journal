@@ -1,34 +1,36 @@
+import { useAuth } from '@clerk/clerk-expo'
 import { Ionicons } from '@expo/vector-icons'
-import { Image } from 'expo-image'
-import { Link, useFocusEffect } from 'expo-router'
+import { useFocusEffect, useRouter } from 'expo-router'
 import { useCallback, useState } from 'react'
-import { ActivityIndicator, ScrollView, TouchableOpacity, View } from 'react-native'
+import { TouchableOpacity, View } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
 
-import { JournalEntry, JournalFeedItem } from '@/components/JournalFeedItem'
+import { CalendarView } from '@/components/CalendarView'
+import { DailyPromptCard } from '@/components/DailyPrompt'
+import { JournalEntry } from '@/components/JournalFeedItem'
 import { StreakCard } from '@/components/StreakCard'
 import { ThemedText } from '@/components/themed-text'
-import { ThemedView } from '@/components/themed-view'
 import { useStreak } from '@/hooks/use-streak'
 import { generateApiUrl } from '@/lib/utlis/generateApiUrl'
 import { useAppUser } from '@/lib/utlis/user'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function HomeScreen() {
+  const { signOut } = useAuth()
+  const router = useRouter()
   const { userId, user } = useAppUser()
+  const insets = useSafeAreaInsets()
   
   const [entries, setEntries] = useState<JournalEntry[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   
-  // Use the streak hook - automatically calculates when entries change
   const { streak, isActive: streakActive } = useStreak(entries)
 
   const fetchEntries = useCallback(async () => {
     if (!userId) {
-      setIsLoading(false)
       return
     }
 
     try {
-      setIsLoading(true)
       const query = `*[_type == "journalEntry" && userId == $userId] | order(createdAt desc) {
         _id,
         title,
@@ -49,11 +51,8 @@ export default function HomeScreen() {
       
       const fetchedEntries: JournalEntry[] = data.result || []
       setEntries(fetchedEntries)
-      // Streak is automatically calculated by useStreak hook
     } catch (error) {
       console.error('Failed to fetch entries:', error)
-    } finally {
-      setIsLoading(false)
     }
   }, [userId])
 
@@ -63,55 +62,55 @@ export default function HomeScreen() {
     }, [fetchEntries])
   )
 
+  const handleSignOut = async () => {
+    try {
+      await signOut()
+      router.replace('/(auth)/sign-in')
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
+  }
+
   return (
-    <View className="flex-1 bg-white dark:bg-gray-900">
-      <ScrollView className="flex-1" contentContainerClassName="pb-24">
-        {/* Header Section */}
-        <View className="h-[250px] w-full bg-[#A1CEDC] dark:bg-[#1D3D47] relative">
-          <Image
-            source={require('@/assets/images/partial-react-logo.png')}
-            className="h-[178px] w-[290px] absolute bottom-0 left-0"
-          />
+    <View className="flex-1 bg-gray-50 dark:bg-gray-900">
+      <ScrollView 
+        className="flex-1" 
+        contentContainerClassName="pb-32"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Modern Header Section */}
+        <View 
+          className="bg-white dark:bg-gray-800 px-6 pb-6 rounded-b-[32px] shadow-sm z-10"
+          style={{ paddingTop: insets.top + 10 }}
+        >
+          <View className="flex-row items-center justify-between mb-4">
+            <View>
+              <ThemedText className="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider mb-1">
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+              </ThemedText>
+              <ThemedText type="title" className="text-3xl">Hi, {user?.fullName?.split(' ')[0] || 'Friend'}!</ThemedText>
+            </View>
+            <TouchableOpacity 
+              onPress={handleSignOut} 
+              className="bg-gray-100 dark:bg-gray-700 p-3 rounded-full"
+            >
+              <Ionicons name="log-out-outline" size={20} color="#666" />
+            </TouchableOpacity>
+          </View>
         </View>
 
-        <ThemedView className="flex-1 p-8 -mt-6 bg-white dark:bg-gray-900 rounded-t-3xl">
-          <View className="mb-6">
-            <ThemedText type="title">Hi, {user?.fullName?.split(' ')[0] || 'There'}! 👋</ThemedText>
-            <ThemedText className="text-gray-500 dark:text-gray-400">Ready to reflect today?</ThemedText>
+        <View className="p-6 gap-6">
+          {/* Calendar at Top */}
+          <View>
+             <ThemedText type="subtitle" className="mb-3 ml-1">Your Consistency</ThemedText>
+             <CalendarView entries={entries} />
           </View>
 
+          {/* Stats & Prompt */}
           <StreakCard streak={streak} isActive={streakActive} />
           
-          <Link href="/(app)/modal" asChild>
-            <TouchableOpacity className="bg-blue-600 dark:bg-blue-500 rounded-xl py-4 flex-row justify-center items-center mb-6 shadow-sm active:bg-blue-700">
-              <Ionicons name="add-circle-outline" size={24} color="white" className="mr-2" />
-              <ThemedText className="text-white font-bold text-lg ml-2">New Entry</ThemedText>
-            </TouchableOpacity>
-          </Link>
-          
-          <View className="flex-row items-center justify-between mb-4">
-            <ThemedText type="subtitle">Recent Entries</ThemedText>
-            <TouchableOpacity onPress={fetchEntries}>
-              <Ionicons name="refresh" size={18} color="#999" />
-            </TouchableOpacity>
-          </View>
-          
-          {isLoading && entries.length === 0 ? (
-            <ActivityIndicator size="large" color="#3b82f6" className="mt-8" />
-          ) : entries.length > 0 ? (
-            <View className="gap-3">
-              {entries.map((entry) => (
-                <JournalFeedItem key={entry._id} entry={entry} />
-              ))}
-            </View>
-          ) : (
-            <View className="items-center justify-center py-10 bg-gray-50 dark:bg-gray-800 rounded-xl border-dashed border-2 border-gray-200 dark:border-gray-700">
-              <Ionicons name="book-outline" size={48} color="#ccc" className="mb-2" />
-              <ThemedText className="text-gray-400 text-center">No entries yet.</ThemedText>
-              <ThemedText className="text-gray-400 text-center text-sm">Start your journal today!</ThemedText>
-            </View>
-          )}
-        </ThemedView>
+          <DailyPromptCard />
+        </View>
       </ScrollView>
     </View>
   )

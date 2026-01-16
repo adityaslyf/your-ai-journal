@@ -38,7 +38,8 @@ export default function Page() {
 
       if (signInAttempt.status === 'complete') {
         await setActive({ session: signInAttempt.createdSessionId })
-        router.replace('/')
+        // Explicitly redirect to the app home
+        router.replace('/(app)/(tabs)')
       } else {
         console.error(JSON.stringify(signInAttempt, null, 2))
         Alert.alert('Error', 'Sign in incomplete. Please try again.')
@@ -57,8 +58,9 @@ export default function Page() {
       const { createdSessionId, setActive } = await startOAuthFlow()
 
       if (createdSessionId) {
-        setActive!({ session: createdSessionId })
-        router.replace('/')
+        await setActive!({ session: createdSessionId })
+        // Explicitly redirect to the app home
+        router.replace('/(app)/(tabs)')
       }
     } catch (err: any) {
       console.error('OAuth error:', err)
@@ -73,7 +75,7 @@ export default function Page() {
       {/* Google Sign In Button */}
       <TouchableOpacity
         onPress={onGoogleSignIn}
-        className="flex-row items-center justify-center bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg py-3 mb-6 active:bg-gray-50 dark:active:bg-gray-700">
+        className="flex-row items-center justify-center bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg py-3 mb-6 active:bg-gray-50 dark:active:bg-gray-700 shadow-sm">
         <Text className="text-lg mr-2">🔍</Text>
         <Text className="text-gray-900 dark:text-white font-semibold">Continue with Google</Text>
       </TouchableOpacity>

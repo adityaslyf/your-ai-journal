@@ -23,6 +23,7 @@ interface JournalDetail {
       _ref: string
       _type: 'reference'
     }
+    alt?: string
   }
 }
 
@@ -46,10 +47,11 @@ export default function JournalDetailScreen() {
         createdAt,
         aiCategories,
         image {
-          asset -> {
-            _id,
-            url
-          }
+          asset {
+            _ref,
+            _type
+          },
+          alt
         }
       }`
       const url = generateApiUrl(query, { id })
