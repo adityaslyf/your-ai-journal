@@ -1,35 +1,26 @@
-export const sanityConfig = {
-  projectId: '6p86bkf8',
-  dataset: 'production',
-  apiVersion: '2024-01-01',
-  useCdn: false, // Set to false during development for instant updates
-}
+/**
+ * @deprecated This file is deprecated. Use the new structure:
+ * - Import from '@/lib/services/sanity/client' for query utilities
+ * - Import from '@/lib/api/journal' or '@/lib/api/prompts' for API calls
+ * - Import from '@/lib/constants/sanity' for configuration
+ * 
+ * This file is kept for backward compatibility only.
+ */
+
+import { SANITY_CONFIG } from '@/lib/constants/sanity'
+import { generateSanityQueryUrl } from '@/lib/services/sanity/client'
 
 /**
- * Generates a fully qualified URL for the Sanity Query API
- * @param query - The GROQ query string
- * @param params - Optional parameters to pass to the query (e.g., { type: 'post' })
- * @returns The complete API URL
+ * @deprecated Use SANITY_CONFIG from '@/lib/constants/sanity' instead
+ */
+export const sanityConfig = SANITY_CONFIG
+
+/**
+ * @deprecated Use generateSanityQueryUrl from '@/lib/services/sanity/client' instead
  */
 export function generateApiUrl(
   query: string,
   params: Record<string, string | number | boolean> = {}
-) {
-  const { projectId, dataset, apiVersion, useCdn } = sanityConfig
-  const host = useCdn ? 'apicdn.sanity.io' : 'api.sanity.io'
-
-  let url = `https://${projectId}.${host}/v${apiVersion}/data/query/${dataset}?query=${encodeURIComponent(
-    query
-  )}`
-
-  // Append parameters
-  for (const [key, value] of Object.entries(params)) {
-    // Sanity expects params to be JSON encoded values
-    // e.g. &param="value" or &param=123
-    const encodedValue = encodeURIComponent(JSON.stringify(value))
-    url += `&$${key}=${encodedValue}`
-  }
-
-  return url
+): string {
+  return generateSanityQueryUrl(query, params)
 }
-

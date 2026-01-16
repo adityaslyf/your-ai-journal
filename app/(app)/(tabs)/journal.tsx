@@ -1,65 +1,26 @@
-import { useAuth } from '@clerk/clerk-expo'
-import { Ionicons } from '@expo/vector-icons'
-import { Link, useFocusEffect, useRouter } from 'expo-router'
-import { useCallback, useState } from 'react'
-import { ActivityIndicator, ScrollView, TouchableOpacity, View } from 'react-native'
+/**
+ * Journal Screen
+ * List view of all journal entries
+ */
 
-import { JournalEntry, JournalFeedItem } from '@/components/JournalFeedItem'
+import { Ionicons } from '@expo/vector-icons'
+import { ScrollView, TouchableOpacity, View, ActivityIndicator } from 'react-native'
+
+import { JournalFeedItem } from '@/components/JournalFeedItem'
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
-import { generateApiUrl } from '@/lib/utlis/generateApiUrl'
+import { useJournalEntries } from '@/hooks/use-journal-entries'
 import { useAppUser } from '@/lib/utlis/user'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
+import { Link } from 'expo-router'
 
 export default function JournalScreen() {
   const { userId } = useAppUser()
   const colorScheme = useColorScheme()
   
-  const [entries, setEntries] = useState<JournalEntry[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const { entries, isLoading, refetch } = useJournalEntries(userId)
   
-  const fetchEntries = useCallback(async () => {
-    if (!userId) {
-      setIsLoading(false)
-      return
-    }
-
-    try {
-      setIsLoading(true)
-      const query = `*[_type == "journalEntry" && userId == $userId] | order(createdAt desc) {
-        _id,
-        title,
-        moodRating,
-        createdAt,
-        aiCategories,
-        image {
-          asset -> {
-            _id,
-            url
-          }
-        }
-      }`
-      const url = generateApiUrl(query, { userId })
-      
-      const response = await fetch(url)
-      const data = await response.json()
-      
-      const fetchedEntries: JournalEntry[] = data.result || []
-      setEntries(fetchedEntries)
-    } catch (error) {
-      console.error('Failed to fetch entries:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [userId])
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchEntries()
-    }, [fetchEntries])
-  )
-
   return (
     <ThemedView className="flex-1">
       <View className="pt-14 pb-4 px-6 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
@@ -71,7 +32,7 @@ export default function JournalScreen() {
           <ThemedText className="text-gray-500 dark:text-gray-400">
             {entries.length} {entries.length === 1 ? 'entry' : 'entries'}
           </ThemedText>
-          <TouchableOpacity onPress={fetchEntries}>
+          <TouchableOpacity onPress={refetch}>
             <Ionicons name="refresh" size={18} color={Colors[colorScheme ?? 'light'].text} />
           </TouchableOpacity>
         </View>

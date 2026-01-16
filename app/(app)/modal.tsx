@@ -1,3 +1,8 @@
+/**
+ * New Entry Modal
+ * Modal screen for creating new journal entries
+ */
+
 import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
 import { useRouter } from 'expo-router'
@@ -6,7 +11,8 @@ import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, Scroll
 
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
-import { sanityConfig } from '@/lib/utlis/generateApiUrl'
+import { SANITY_TOKEN } from '@/lib/constants/sanity'
+import { executeMutation } from '@/lib/services/sanity/client'
 import { uploadImageToSanity } from '@/lib/utlis/sanity/image'
 import { useAppUser } from '@/lib/utlis/user'
 
@@ -50,6 +56,11 @@ export default function NewEntryScreen() {
       return
     }
 
+    if (!SANITY_TOKEN) {
+      Alert.alert('Configuration Error', 'Sanity token not found. Please check your environment variables.')
+      return
+    }
+
     setIsSubmitting(true)
     try {
       let imageAsset = null
@@ -87,32 +98,7 @@ export default function NewEntryScreen() {
         },
       ]
 
-      const token = process.env.EXPO_PUBLIC_SANITY_TOKEN
-
-      if (!token) {
-        Alert.alert('Configuration Error', 'Sanity token not found. Please check your environment variables.')
-        return
-      }
-
-      const response = await fetch(
-        `https://${sanityConfig.projectId}.api.sanity.io/v${sanityConfig.apiVersion}/data/mutate/${sanityConfig.dataset}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ mutations }),
-        }
-      )
-
-      const result = await response.json()
-      
-      if (result.error) {
-        console.error('Sanity Error:', result.error)
-        throw new Error(result.error.description || 'Failed to create entry')
-      }
-
+      await executeMutation(mutations, SANITY_TOKEN)
       router.back()
     } catch (error: any) {
       console.error(error)
@@ -217,7 +203,7 @@ export default function NewEntryScreen() {
               placeholder="What's on your mind?"
               placeholderTextColor="#9CA3AF"
               multiline
-              scrollEnabled={false} // Let the parent ScrollView handle scrolling
+              scrollEnabled={false}
               textAlignVertical="top"
               className="min-h-[300px] p-4 bg-gray-50 dark:bg-gray-800 rounded-lg text-base text-gray-900 dark:text-white"
             />

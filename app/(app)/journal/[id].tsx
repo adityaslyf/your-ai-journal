@@ -1,75 +1,44 @@
+/**
+ * Journal Detail Screen
+ * Displays a single journal entry in detail
+ */
+
 import { Ionicons } from '@expo/vector-icons'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ActivityIndicator, Image, ScrollView, TouchableOpacity, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
-import { generateApiUrl } from '@/lib/utlis/generateApiUrl'
+import { fetchJournalEntryById } from '@/lib/api/journal'
+import type { JournalEntry } from '@/lib/types'
 import { buildImageUrl } from '@/lib/utlis/sanity/image'
-
-interface JournalDetail {
-  _id: string
-  title: string
-  content: {
-    children: { text: string }[]
-  }[]
-  moodRating: number
-  createdAt: string
-  aiCategories?: string[]
-  image?: {
-    asset: {
-      _ref: string
-      _type: 'reference'
-    }
-    alt?: string
-  }
-}
 
 export default function JournalDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   const insets = useSafeAreaInsets()
-  const [entry, setEntry] = useState<JournalDetail | null>(null)
+  const [entry, setEntry] = useState<JournalEntry | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const fetchEntry = useCallback(async () => {
-    if (!id) return
-
-    try {
-      setIsLoading(true)
-      const query = `*[_type == "journalEntry" && _id == $id][0] {
-        _id,
-        title,
-        content,
-        moodRating,
-        createdAt,
-        aiCategories,
-        image {
-          asset {
-            _ref,
-            _type
-          },
-          alt
-        }
-      }`
-      const url = generateApiUrl(query, { id })
-
-      const response = await fetch(url)
-      const data = await response.json()
-
-      setEntry(data.result)
-    } catch (error) {
-      console.error('Failed to fetch entry:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [id])
-
   useEffect(() => {
-    fetchEntry()
-  }, [fetchEntry])
+    async function loadEntry() {
+      if (!id) return
+
+      try {
+        setIsLoading(true)
+        const fetchedEntry = await fetchJournalEntryById(id)
+        setEntry(fetchedEntry)
+      } catch (error) {
+        console.error('Failed to fetch entry:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadEntry()
+  }, [id])
 
   if (isLoading) {
     return (
@@ -98,8 +67,10 @@ export default function JournalDetailScreen() {
   const imageUrl = entry.image ? buildImageUrl(entry.image, 800, 400) : null
 
   const contentText = entry.content
-    .map((block) => block.children.map((child) => child.text).join(''))
-    .join('\n\n')
+    ? entry.content
+        .map((block) => block.children.map((child) => child.text).join(''))
+        .join('\n\n')
+    : ''
 
   return (
     <View className="flex-1 bg-white dark:bg-gray-900" style={{ paddingTop: insets.top }}>
