@@ -65,12 +65,6 @@ export default function AIChatScreen() {
         <View className="flex-row justify-between items-center">
              <View>
                 <ThemedText className="text-3xl font-bold">AI Companion</ThemedText>
-                <View className="flex-row items-center mt-1">
-                    <View className="w-2 h-2 rounded-full bg-green-500 mr-2" />
-                    <ThemedText className="text-gray-500 text-xs font-bold tracking-widest uppercase">
-                        Journal Context Active
-                    </ThemedText>
-                </View>
              </View>
              <View className="w-10 h-10 bg-purple-100 rounded-full items-center justify-center">
                 <Ionicons name="sparkles" size={20} color={colors.primary} />

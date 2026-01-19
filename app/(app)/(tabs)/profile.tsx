@@ -8,7 +8,6 @@ import { ThemedText } from '@/components/themed-text'
 import { useAppUser } from '@/lib/utlis/user'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
-import { useState } from 'react'
 
 export default function ProfileScreen() {
   const { signOut } = useAuth()
@@ -18,8 +17,6 @@ export default function ProfileScreen() {
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
   
-  const [activeTab, setActiveTab] = useState<'stats' | 'settings'>('stats')
-
   const handleSignOut = async () => {
     try {
       await signOut()
@@ -80,25 +77,6 @@ export default function ProfileScreen() {
             </View>
         </View>
 
-        {/* Tab Toggle */}
-        <View className="flex-row bg-gray-100 dark:bg-gray-800 p-1 rounded-full mt-6">
-            <TouchableOpacity 
-                onPress={() => setActiveTab('stats')}
-                className={`flex-1 py-3 rounded-full items-center ${activeTab === 'stats' ? 'bg-white dark:bg-gray-700 shadow-sm' : ''}`}
-            >
-                <ThemedText className={`font-semibold ${activeTab === 'stats' ? 'text-gray-900 dark:text-white' : 'text-gray-500'}`}>
-                    Stats
-                </ThemedText>
-            </TouchableOpacity>
-            <TouchableOpacity 
-                onPress={() => setActiveTab('settings')}
-                className={`flex-1 py-3 rounded-full items-center ${activeTab === 'settings' ? 'bg-white dark:bg-gray-700 shadow-sm' : ''}`}
-            >
-                <ThemedText className={`font-semibold ${activeTab === 'settings' ? 'text-gray-900 dark:text-white' : 'text-gray-500'}`}>
-                    Settings
-                </ThemedText>
-            </TouchableOpacity>
-        </View>
 
         {/* Content Section */}
         <ScrollView className="mt-6" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 150 }}>

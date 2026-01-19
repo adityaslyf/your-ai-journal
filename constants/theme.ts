@@ -1,42 +1,60 @@
 /**
- * Pastel Theme inspired by the reference images
+ * Neon Cyberpunk Theme
+ * High contrast, vibrant colors, glowing effects
  */
 
-const tintColorLight = '#1C1C1E'; // Dark text for active tab in light mode
-const tintColorDark = '#FFFFFF';
+const tintColorLight = '#00f2ff';
+const tintColorDark = '#00f2ff';
 
 export const Colors = {
   light: {
-    text: '#1C1C1E',
-    background: '#F2F2F7', // Light gray background
-    tint: tintColorLight,
-    icon: '#8E8E93',
-    tabIconDefault: '#8E8E93',
-    tabIconSelected: tintColorLight,
-    card: '#FFFFFF',
-    border: '#E5E5EA',
+    // Light mode will still be bold but readable
+    text: '#09090b',
+    background: '#ffffff',
+    tint: '#7c3aed',
+    icon: '#18181b',
+    tabIconDefault: '#71717a',
+    tabIconSelected: '#7c3aed',
+    card: '#f4f4f5',
+    border: '#e4e4e7',
     
-    // Custom Palette
-    primary: '#9D8BF5', // The Purple from the header
-    secondary: '#C5F2C7', // The Green from the cards
-    tertiary: '#FFE4C0', // A soft yellow/orange for variety
-    accent: '#1C1C1E', // Dark accent for buttons/tab bar
-    highlight: '#F4F3FF', // Very light purple for backgrounds
+    // Neon Accents (dimmed for light mode)
+    primary: '#7c3aed', // Electric Purple
+    secondary: '#06b6d4', // Cyan
+    tertiary: '#f472b6', // Pink
+    accent: '#09090b',
+    highlight: '#f3e8ff',
+    
+    // Neon specifics
+    neonBlue: '#06b6d4',
+    neonPink: '#ec4899',
+    neonGreen: '#10b981',
+    neonYellow: '#f59e0b',
+    glow: 'rgba(124, 58, 237, 0.3)',
   },
   dark: {
-    text: '#F2F2F7',
-    background: '#000000',
+    // The main event: Cyberpunk Dark Mode
+    text: '#ffffff',
+    background: '#050505', // Almost pitch black
     tint: tintColorDark,
-    icon: '#8E8E93',
-    tabIconDefault: '#8E8E93',
-    tabIconSelected: tintColorDark,
-    card: '#1C1C1E',
-    border: '#2C2C2E',
+    icon: '#a1a1aa',
+    tabIconDefault: '#52525b',
+    tabIconSelected: '#00f2ff',
+    card: '#0a0a0a', // Slightly lighter black
+    border: '#27272a',
     
-    primary: '#9D8BF5',
-    secondary: '#C5F2C7',
-    tertiary: '#FFE4C0',
-    accent: '#FFFFFF',
-    highlight: '#1C1C1E',
+    // Vibrant Neon Accents
+    primary: '#8b5cf6', // Electric Purple
+    secondary: '#00f2ff', // Cyber Blue
+    tertiary: '#ff00ff', // Hot Pink
+    accent: '#ffffff',
+    highlight: '#18181b',
+    
+    // Neon specifics
+    neonBlue: '#00f2ff',
+    neonPink: '#ff00ff',
+    neonGreen: '#39ff14',
+    neonYellow: '#ffff00',
+    glow: 'rgba(0, 242, 255, 0.5)',
   },
 };
