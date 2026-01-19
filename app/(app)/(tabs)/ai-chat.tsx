@@ -81,12 +81,12 @@ export default function AIChatScreen() {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1"
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 70}
       >
         <ScrollView
           ref={scrollViewRef}
           className="flex-1 px-6"
-          contentContainerClassName="pb-40"
+          contentContainerStyle={{ paddingBottom: 20 }}
           onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
         >
           {messages.length === 0 && (
@@ -142,14 +142,9 @@ export default function AIChatScreen() {
           )}
         </ScrollView>
 
-        {/* Floating Input Area - Positioned above tab bar */}
-        <View 
-            className="absolute left-4 right-4"
-            style={{ 
-                bottom: 110, // Position above the floating tab bar (70px height + 30px bottom + 10px spacing)
-            }}
-        >
-          <View className="flex-row items-end bg-white dark:bg-gray-800 rounded-[24px] shadow-lg shadow-black/5 border border-gray-100 dark:border-gray-700 px-4 py-2">
+        {/* Fixed Input Area at Bottom - Outside ScrollView */}
+        <View className="bg-white dark:bg-black border-t border-gray-100 dark:border-gray-800 px-4 py-3">
+          <View className="flex-row items-center bg-gray-50 dark:bg-gray-800 rounded-[28px] px-4 py-2">
             <TextInput
               value={input}
               onChangeText={setInput}
@@ -159,20 +154,21 @@ export default function AIChatScreen() {
               maxLength={1000}
               editable={!isStreaming}
               className="flex-1 min-h-[44px] max-h-[100px] text-gray-900 dark:text-white mr-2 pt-3 pb-3 font-medium"
+              style={{ lineHeight: 20 }}
             />
             <TouchableOpacity
               onPress={handleSend}
               disabled={!input.trim() || isStreaming}
-              className={`w-10 h-10 rounded-full items-center justify-center mb-1 ${
+              className={`w-11 h-11 rounded-full items-center justify-center ${
                 input.trim() && !isStreaming
                   ? 'bg-black dark:bg-white'
-                  : 'bg-gray-100 dark:bg-gray-700'
+                  : 'bg-gray-200 dark:bg-gray-700'
               }`}
             >
               {isStreaming ? (
-                <ActivityIndicator size="small" color={input.trim() ? "white" : "#999"} />
+                <ActivityIndicator size="small" color={input.trim() ? (colorScheme === 'dark' ? "#000" : "white") : "#999"} />
               ) : (
-                <Ionicons name="arrow-up" size={20} color={input.trim() ? "white" : "#999"} />
+                <Ionicons name="arrow-up" size={22} color={input.trim() ? (colorScheme === 'dark' ? "#000" : "white") : "#999"} />
               )}
             </TouchableOpacity>
           </View>

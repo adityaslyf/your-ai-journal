@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons'
 import { View, ScrollView, Pressable } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { format } from 'date-fns'
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday } from 'date-fns'
 import { Link } from 'expo-router'
+import { useMemo } from 'react'
 
 import { DailyPromptCard } from '@/components/DailyPrompt'
 import { ThemedText } from '@/components/themed-text'
@@ -20,6 +21,20 @@ export default function HomeScreen() {
   
   const { entries } = useJournalEntries(user?.id)
   const { streak } = useStreak(entries)
+
+  // Get current month days for calendar
+  const monthDays = useMemo(() => {
+    const start = startOfMonth(new Date())
+    const end = endOfMonth(new Date())
+    return eachDayOfInterval({ start, end })
+  }, [])
+
+  // Check if a day has entries
+  const hasEntryOnDay = (day: Date) => {
+    return entries.some(entry => 
+      isSameDay(new Date(entry.createdAt), day)
+    )
+  }
   
   const todayEntries = entries.filter(entry => {
     const entryDate = new Date(entry.createdAt)
@@ -45,11 +60,11 @@ export default function HomeScreen() {
       >
         <View style={{ paddingTop: insets.top + 20, paddingHorizontal: 24 }}>
           {/* Header */}
-          <View className="mb-8">
+          <View className="mb-6">
             <ThemedText className="text-gray-400 text-sm mb-2">
               {format(new Date(), 'EEEE, MMMM d, yyyy')}
             </ThemedText>
-            <ThemedText className="text-4xl font-bold mb-4">
+            <ThemedText className="text-4xl font-bold mb-2">
               {getGreeting()}
             </ThemedText>
             <ThemedText className="text-gray-500 text-base">
@@ -57,17 +72,69 @@ export default function HomeScreen() {
             </ThemedText>
           </View>
 
-          {/* Stats Cards */}
-          <View className="flex-row gap-4 mb-8">
-            <View className="flex-1 bg-purple-50 dark:bg-purple-900/20 rounded-3xl p-5">
-              <Ionicons name="flame" size={28} color={colors.primary} />
-              <ThemedText className="text-3xl font-bold mt-2 mb-1">{streak}</ThemedText>
-              <ThemedText className="text-gray-500 text-sm">Day Streak</ThemedText>
+          {/* Calendar Strip - Current Month */}
+          <View className="mb-8 bg-white dark:bg-gray-900 rounded-3xl p-5 border border-gray-100 dark:border-gray-800">
+            <View className="flex-row items-center justify-between mb-4">
+              <ThemedText className="text-lg font-bold">{format(new Date(), 'MMMM yyyy')}</ThemedText>
+              <View className="flex-row items-center bg-purple-100 dark:bg-purple-900/30 px-3 py-1 rounded-full">
+                <Ionicons name="flame" size={14} color={colors.primary} />
+                <ThemedText className="text-sm font-bold text-purple-600 dark:text-purple-300 ml-1">
+                  {streak} day streak
+                </ThemedText>
+              </View>
             </View>
-            <View className="flex-1 bg-green-50 dark:bg-green-900/20 rounded-3xl p-5">
-              <Ionicons name="document-text" size={28} color={colors.secondary} />
-              <ThemedText className="text-3xl font-bold mt-2 mb-1">{entries.length}</ThemedText>
-              <ThemedText className="text-gray-500 text-sm">Total Entries</ThemedText>
+            
+            {/* Week Day Headers */}
+            <View className="flex-row justify-between mb-2">
+              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
+                <View key={i} className="w-9 items-center">
+                  <ThemedText className="text-xs text-gray-400 font-semibold">{day}</ThemedText>
+                </View>
+              ))}
+            </View>
+
+            {/* Calendar Days Grid */}
+            <View className="flex-row flex-wrap">
+              {/* Add empty spaces for days before the month starts */}
+              {Array.from({ length: monthDays[0].getDay() }).map((_, i) => (
+                <View key={`empty-${i}`} className="w-9 h-9 m-0.5" />
+              ))}
+              
+              {/* Render month days */}
+              {monthDays.map((day, i) => {
+                const hasEntry = hasEntryOnDay(day)
+                const today = isToday(day)
+                
+                return (
+                  <View
+                    key={i}
+                    className={`w-9 h-9 m-0.5 items-center justify-center rounded-full ${
+                      today ? 'bg-purple-500' : hasEntry ? 'bg-green-100 dark:bg-green-900/30' : ''
+                    }`}
+                  >
+                    <ThemedText className={`text-sm ${
+                      today ? 'text-white font-bold' : hasEntry ? 'text-gray-900 dark:text-white font-semibold' : 'text-gray-400'
+                    }`}>
+                      {format(day, 'd')}
+                    </ThemedText>
+                    {hasEntry && !today && (
+                      <View className="absolute bottom-1 w-1 h-1 rounded-full bg-green-500" />
+                    )}
+                  </View>
+                )
+              })}
+            </View>
+
+            {/* Legend */}
+            <View className="flex-row items-center justify-center gap-4 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+              <View className="flex-row items-center">
+                <View className="w-3 h-3 rounded-full bg-purple-500 mr-1" />
+                <ThemedText className="text-xs text-gray-500">Today</ThemedText>
+              </View>
+              <View className="flex-row items-center">
+                <View className="w-3 h-3 rounded-full bg-green-100 dark:bg-green-900/30 mr-1" />
+                <ThemedText className="text-xs text-gray-500">Has entry</ThemedText>
+              </View>
             </View>
           </View>
 
@@ -90,19 +157,26 @@ export default function HomeScreen() {
               <ThemedText className="text-xl font-bold mb-4">Today&apos;s Entries</ThemedText>
               {todayEntries.map((entry) => (
                 <Link key={entry._id} href={`/(app)/journal/${entry._id}` as any} asChild>
-                  <Pressable className="bg-gray-50 dark:bg-gray-900 rounded-3xl p-5 mb-3 border border-gray-100 dark:border-gray-800">
-                    <View className="flex-row items-center justify-between mb-2">
-                      <ThemedText className="font-bold text-lg flex-1" numberOfLines={1}>
-                        {entry.title}
+                  <Pressable className="bg-purple-50 dark:bg-purple-900/20 rounded-[32px] p-5 mb-3">
+                    {/* Date Badge */}
+                    <View className="self-start bg-purple-200 dark:bg-purple-800 px-3 py-1 rounded-full mb-3">
+                      <ThemedText className="text-xs font-semibold text-purple-900 dark:text-purple-100">
+                        {format(new Date(entry.createdAt), 'MMM d, yyyy')}
                       </ThemedText>
-                      <Ionicons name="chevron-forward" size={20} color={colors.icon} />
                     </View>
-                    <ThemedText className="text-gray-500 text-sm" numberOfLines={2}>
-                      Tap to view full entry
+
+                    <ThemedText className="font-bold text-xl mb-2" numberOfLines={1}>
+                      {entry.title}
                     </ThemedText>
-                    <ThemedText className="text-xs text-gray-400 mt-2">
-                      {format(new Date(entry.createdAt), 'h:mm a')}
-                    </ThemedText>
+                    
+                    {entry.moodRating && (
+                      <View className="flex-row items-center">
+                        <Ionicons name="happy-outline" size={16} color={colors.primary} />
+                        <ThemedText className="text-sm text-gray-500 ml-1">
+                          Mood: {entry.moodRating}/10
+                        </ThemedText>
+                      </View>
+                    )}
                   </Pressable>
                 </Link>
               ))}
@@ -120,14 +194,26 @@ export default function HomeScreen() {
                   </Pressable>
                 </Link>
               </View>
-              {recentEntries.map((entry) => (
+              {recentEntries.map((entry, idx) => (
                 <Link key={entry._id} href={`/(app)/journal/${entry._id}` as any} asChild>
-                  <Pressable className="bg-white dark:bg-gray-900 rounded-3xl p-4 mb-3 border border-gray-100 dark:border-gray-800">
-                    <ThemedText className="font-semibold text-base mb-1" numberOfLines={1}>
+                  <Pressable className="bg-white dark:bg-gray-900 rounded-[28px] p-4 mb-3 border border-gray-100 dark:border-gray-800">
+                    <View className="flex-row items-center justify-between mb-2">
+                      <View className="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
+                        <ThemedText className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                          {format(new Date(entry.createdAt), 'MMM d, yyyy')}
+                        </ThemedText>
+                      </View>
+                      {entry.moodRating && (
+                        <View className="flex-row items-center">
+                          <Ionicons name="happy-outline" size={14} color={colors.icon} />
+                          <ThemedText className="text-xs text-gray-500 ml-1">
+                            {entry.moodRating}/10
+                          </ThemedText>
+                        </View>
+                      )}
+                    </View>
+                    <ThemedText className="font-semibold text-base" numberOfLines={1}>
                       {entry.title}
-                    </ThemedText>
-                    <ThemedText className="text-xs text-gray-400">
-                      {format(new Date(entry.createdAt), 'MMM d, yyyy • h:mm a')}
                     </ThemedText>
                   </Pressable>
                 </Link>

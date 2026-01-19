@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { ScrollView, TouchableOpacity, View, Image } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { format } from 'date-fns'
 
 import { ThemedText } from '@/components/themed-text'
 import { useJournalEntries } from '@/hooks/use-journal-entries'
@@ -75,34 +76,28 @@ export default function JournalScreen() {
                         key={entry._id}
                         onPress={() => router.push(`/(app)/journal/${entry._id}`)}
                         activeOpacity={0.9}
-                        className="rounded-[32px] p-5 mb-2"
+                        className="rounded-[32px] p-5 mb-3"
                         style={{ backgroundColor: index === 0 ? colors.tertiary : (index === 1 ? '#F2F2F7' : colors.secondary) }}
                     >
-                        {/* Status Tag */}
-                        <View className={`self-start px-3 py-1 rounded-full mb-3 ${index === 0 ? 'bg-orange-300/50' : (index === 1 ? 'bg-purple-200' : 'bg-green-300/50')}`}>
-                            <ThemedText className="text-xs font-semibold text-gray-800">
-                                {new Date(entry.createdAt).toLocaleDateString()}
+                        {/* Date Badge */}
+                        <View className={`self-start px-3 py-1.5 rounded-full mb-3 ${index === 0 ? 'bg-orange-300/60' : (index === 1 ? 'bg-purple-300' : 'bg-green-400/60')}`}>
+                            <ThemedText className="text-xs font-bold text-gray-900">
+                                {format(new Date(entry.createdAt), 'dd/MM/yyyy')}
                             </ThemedText>
                         </View>
 
-                        <ThemedText className="text-xl font-bold text-gray-900 mb-1 leading-tight">
+                        <ThemedText className="text-xl font-bold text-gray-900 mb-2 leading-tight">
                             {entry.title}
                         </ThemedText>
                         
-                        <View className="flex-row items-center mt-1 mb-4">
-                            <Ionicons name="happy-outline" size={14} color="#666" />
-                            <ThemedText className="text-gray-600 text-xs ml-1">Mood: {entry.moodRating}/10</ThemedText>
+                        <View className="flex-row items-center mb-4">
+                            <Ionicons name="happy-outline" size={16} color="#666" />
+                            <ThemedText className="text-gray-700 text-sm ml-1 font-medium">Mood: {entry.moodRating}/10</ThemedText>
                         </View>
 
                         {imageUrl && (
-                            <Image source={{ uri: imageUrl }} className="w-full h-32 rounded-2xl mb-4" resizeMode="cover" />
+                            <Image source={{ uri: imageUrl }} className="w-full h-40 rounded-3xl" resizeMode="cover" />
                         )}
-
-                        {/* Progress Bar Style decoration */}
-                        <View className="h-2 bg-black/5 rounded-full overflow-hidden flex-row">
-                            <View style={{ width: `${entry.moodRating * 10}%` }} className={`h-full ${index === 2 ? 'bg-green-500' : 'bg-black/20'}`} />
-                            <View className="flex-1" />
-                        </View>
                         
                     </TouchableOpacity>
                  )
