@@ -1,68 +1,114 @@
-/**
- * Journal Screen
- * List view of all journal entries
- */
-
 import { Ionicons } from '@expo/vector-icons'
-import { ScrollView, TouchableOpacity, View, ActivityIndicator } from 'react-native'
+import { useRouter } from 'expo-router'
+import { ScrollView, TouchableOpacity, View, Image } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { JournalFeedItem } from '@/components/JournalFeedItem'
 import { ThemedText } from '@/components/themed-text'
-import { ThemedView } from '@/components/themed-view'
 import { useJournalEntries } from '@/hooks/use-journal-entries'
 import { useAppUser } from '@/lib/utlis/user'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
-import { Link } from 'expo-router'
+import { useState } from 'react'
+import { buildImageUrl } from '@/lib/utlis/sanity/image'
 
 export default function JournalScreen() {
   const { userId } = useAppUser()
   const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const insets = useSafeAreaInsets()
+  const router = useRouter()
   
-  const { entries, isLoading, refetch } = useJournalEntries(userId)
-  
+  const { entries, isLoading } = useJournalEntries(userId)
+  const [activeFilter, setActiveFilter] = useState('All entries')
+
+  const filters = ['All entries', 'High Mood', 'Low Mood', 'Bookmarked']
+
   return (
-    <ThemedView className="flex-1">
-      <View className="pt-14 pb-4 px-6 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
-        <ThemedText type="title">Journal Entries</ThemedText>
-      </View>
-      
-      <ScrollView className="flex-1 px-4" contentContainerClassName="pt-4 pb-24">
-        <View className="flex-row items-center justify-between mb-4">
-          <ThemedText className="text-gray-500 dark:text-gray-400">
-            {entries.length} {entries.length === 1 ? 'entry' : 'entries'}
-          </ThemedText>
-          <TouchableOpacity onPress={refetch}>
-            <Ionicons name="refresh" size={18} color={Colors[colorScheme ?? 'light'].text} />
-          </TouchableOpacity>
+    <View className="flex-1 bg-white dark:bg-black">
+      <View style={{ paddingTop: insets.top + 20, paddingHorizontal: 24 }}>
+         {/* Header */}
+         <View className="flex-row justify-between items-center mb-6">
+            <ThemedText className="text-2xl font-bold">My entries</ThemedText>
+            <View className="flex-row gap-3">
+                 <TouchableOpacity className="w-10 h-10 bg-white border border-gray-200 rounded-full items-center justify-center">
+                    <Ionicons name="search" size={20} color="black" />
+                </TouchableOpacity>
+                <TouchableOpacity className="w-10 h-10 bg-white border border-gray-200 rounded-full items-center justify-center">
+                    <Ionicons name="notifications-outline" size={20} color="black" />
+                </TouchableOpacity>
+            </View>
         </View>
-        
-        {isLoading && entries.length === 0 ? (
-          <ActivityIndicator size="large" color="#3b82f6" className="mt-8" />
-        ) : entries.length > 0 ? (
-          <View className="gap-3">
-            {entries.map((entry) => (
-              <JournalFeedItem key={entry._id} entry={entry} />
+
+        {/* Filter Pills */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-8" contentContainerStyle={{ paddingRight: 24 }}>
+            {filters.map((filter, index) => (
+                <TouchableOpacity 
+                    key={index}
+                    onPress={() => setActiveFilter(filter)}
+                    className={`px-5 py-2.5 rounded-full mr-3 ${activeFilter === filter ? 'bg-black dark:bg-white' : 'bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800'}`}
+                >
+                    <ThemedText className={`font-medium ${activeFilter === filter ? 'text-white dark:text-black' : 'text-gray-500'}`}>
+                        {filter}
+                    </ThemedText>
+                </TouchableOpacity>
             ))}
-          </View>
-        ) : (
-          <View className="items-center justify-center py-20 bg-gray-50 dark:bg-gray-800 rounded-xl border-dashed border-2 border-gray-200 dark:border-gray-700 mt-4">
-            <Ionicons name="book-outline" size={48} color="#ccc" className="mb-2" />
-            <ThemedText className="text-gray-400 text-center">No entries yet.</ThemedText>
-            <ThemedText className="text-gray-400 text-center text-sm">Create your first entry!</ThemedText>
-          </View>
-        )}
+        </ScrollView>
+      </View>
+
+      <ScrollView 
+        className="flex-1 px-6"
+        contentContainerClassName="pb-40" // Increased padding for floating tab bar
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="gap-4">
+             {entries.map((entry, index) => {
+                 const imageUrl = entry.image?.asset?.url 
+                    ? buildImageUrl({ asset: { _ref: entry.image.asset._id, _type: 'reference' } }, 400, 200) 
+                    : null
+                
+                // Varied background colors for visual interest like in the reference
+                const cardBg = index % 3 === 0 ? colors.tertiary : (index % 3 === 1 ? '#F2F2F7' : colors.secondary)
+                const isDarkText = true; // Pastel backgrounds need dark text
+
+                 return (
+                    <TouchableOpacity 
+                        key={entry._id}
+                        onPress={() => router.push(`/(app)/journal/${entry._id}`)}
+                        activeOpacity={0.9}
+                        className="rounded-[32px] p-5 mb-2"
+                        style={{ backgroundColor: index === 0 ? colors.tertiary : (index === 1 ? '#F2F2F7' : colors.secondary) }}
+                    >
+                        {/* Status Tag */}
+                        <View className={`self-start px-3 py-1 rounded-full mb-3 ${index === 0 ? 'bg-orange-300/50' : (index === 1 ? 'bg-purple-200' : 'bg-green-300/50')}`}>
+                            <ThemedText className="text-xs font-semibold text-gray-800">
+                                {new Date(entry.createdAt).toLocaleDateString()}
+                            </ThemedText>
+                        </View>
+
+                        <ThemedText className="text-xl font-bold text-gray-900 mb-1 leading-tight">
+                            {entry.title}
+                        </ThemedText>
+                        
+                        <View className="flex-row items-center mt-1 mb-4">
+                            <Ionicons name="happy-outline" size={14} color="#666" />
+                            <ThemedText className="text-gray-600 text-xs ml-1">Mood: {entry.moodRating}/10</ThemedText>
+                        </View>
+
+                        {imageUrl && (
+                            <Image source={{ uri: imageUrl }} className="w-full h-32 rounded-2xl mb-4" resizeMode="cover" />
+                        )}
+
+                        {/* Progress Bar Style decoration */}
+                        <View className="h-2 bg-black/5 rounded-full overflow-hidden flex-row">
+                            <View style={{ width: `${entry.moodRating * 10}%` }} className={`h-full ${index === 2 ? 'bg-green-500' : 'bg-black/20'}`} />
+                            <View className="flex-1" />
+                        </View>
+                        
+                    </TouchableOpacity>
+                 )
+             })}
+        </View>
       </ScrollView>
-      
-      {/* Floating Action Button for adding new entry */}
-      <Link href="/(app)/modal" asChild>
-        <TouchableOpacity 
-          className="absolute bottom-6 right-6 w-14 h-14 bg-blue-600 rounded-full items-center justify-center shadow-lg shadow-blue-600/30"
-          activeOpacity={0.8}
-        >
-          <Ionicons name="add" size={30} color="white" />
-        </TouchableOpacity>
-      </Link>
-    </ThemedView>
+    </View>
   )
 }

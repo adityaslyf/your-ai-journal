@@ -1,54 +1,67 @@
 import { Tabs, useRouter } from 'expo-router';
 import React from 'react';
-import { View } from 'react-native';
+import { View, Platform } from 'react-native';
 
 import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
   const router = useRouter();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: '#999',
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: {
-            height: 88, // Taller tab bar
+            height: Platform.OS === 'ios' ? 90 : 70,
             paddingTop: 8,
+            paddingBottom: Platform.OS === 'ios' ? 30 : 10,
+            backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#FFFFFF',
+            borderTopWidth: 0,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: -2 },
+            shadowOpacity: 0.05,
+            shadowRadius: 10,
+            elevation: 5,
         },
         tabBarLabelStyle: {
-            marginBottom: 8,
-            fontSize: 11,
-            fontWeight: '500',
+            fontSize: 10,
+            fontWeight: '600',
+            marginTop: 2,
         }
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+             <Ionicons size={24} name={focused ? "calendar" : "calendar-outline"} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="journal"
         options={{
           title: 'Journal',
-          tabBarIcon: ({ color }) => <Ionicons size={28} name="book-outline" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+             <Ionicons size={24} name={focused ? "document-text" : "document-text-outline"} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="new"
         options={{
           title: '',
-          tabBarIcon: ({ color }) => (
-            <View className="bg-blue-600 dark:bg-blue-500 rounded-full w-14 h-14 items-center justify-center -mt-6 shadow-lg shadow-blue-500/40">
-                <Ionicons name="add" size={32} color="white" />
+          tabBarIcon: ({ focused }) => (
+            <View className="bg-black dark:bg-white rounded-full w-14 h-14 items-center justify-center shadow-lg shadow-purple-500/20 -mt-8">
+                <Ionicons name="add" size={32} color={colorScheme === 'dark' ? '#000' : '#FFF'} />
             </View>
           ),
         }}
@@ -63,20 +76,18 @@ export default function TabLayout() {
         name="ai-chat"
         options={{
           title: 'AI Chat',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="bubble.left.and.bubble.right.fill" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+             <Ionicons size={24} name={focused ? "chatbubbles" : "chatbubbles-outline"} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          href: null,
+          tabBarIcon: ({ color, focused }) => (
+             <Ionicons size={24} name={focused ? "person" : "person-outline"} color={color} />
+          ),
         }}
       />
     </Tabs>
