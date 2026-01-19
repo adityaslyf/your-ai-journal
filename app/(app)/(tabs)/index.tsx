@@ -1,8 +1,3 @@
-/**
- * Home Screen
- * Main dashboard showing calendar, streak, and daily prompt
- */
-
 import { useAuth } from '@clerk/clerk-expo'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'

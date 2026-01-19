@@ -67,3 +67,42 @@ export const GET_DAILY_PROMPT_BY_DATE = `
     aiGenerated
   }
 `
+
+/**
+ * Get user's most recent conversation
+ */
+export const GET_USER_CONVERSATION = `
+  *[_type == "chatConversation" && userId == $userId] | order(updatedAt desc)[0] {
+    _id,
+    userId,
+    title,
+    createdAt,
+    updatedAt
+  }
+`
+
+/**
+ * Get all messages for a conversation
+ */
+export const GET_CONVERSATION_MESSAGES = `
+  *[_type == "chatMessage" && conversationId == $conversationId] | order(timestamp asc) {
+    _id,
+    text,
+    role,
+    timestamp,
+    conversationId
+  }
+`
+
+/**
+ * Get recent journals for AI context (last 15 entries)
+ */
+export const GET_RECENT_JOURNALS_FOR_CONTEXT = `
+  *[_type == "journalEntry" && userId == $userId] | order(createdAt desc)[0...15] {
+    title,
+    content,
+    moodRating,
+    createdAt,
+    aiCategories
+  }
+`

@@ -11,3 +11,8 @@ export const SANITY_CONFIG = {
 } as const
 
 export const SANITY_TOKEN = process.env.EXPO_PUBLIC_SANITY_TOKEN
+
+/**
+ * Gemini AI Configuration
+ */
+export const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY

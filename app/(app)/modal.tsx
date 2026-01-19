@@ -1,8 +1,3 @@
-/**
- * New Entry Modal
- * Modal screen for creating new journal entries
- */
-
 import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
 import { useRouter } from 'expo-router'
