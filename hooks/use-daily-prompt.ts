@@ -3,9 +3,9 @@
  * Custom hook for managing daily prompt data
  */
 
-import { useState, useEffect } from 'react'
 import { fetchLatestDailyPrompt } from '@/lib/api/prompts'
 import type { DailyPrompt } from '@/lib/types'
+import { useEffect, useState } from 'react'
 
 interface UseDailyPromptReturn {
   prompt: DailyPrompt | null

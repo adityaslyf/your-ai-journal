@@ -4,7 +4,7 @@
  */
 
 import { executeQuery } from '@/lib/services/sanity/client'
-import { GET_USER_JOURNAL_ENTRIES, GET_JOURNAL_ENTRY_BY_ID } from '@/lib/services/sanity/queries'
+import { GET_JOURNAL_ENTRY_BY_ID, GET_USER_JOURNAL_ENTRIES } from '@/lib/services/sanity/queries'
 import type { JournalEntry, JournalEntryListItem } from '@/lib/types'
 
 /**

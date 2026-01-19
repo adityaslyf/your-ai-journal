@@ -6,9 +6,9 @@
 import { Ionicons } from '@expo/vector-icons'
 import { ActivityIndicator, View } from 'react-native'
 
-import { ThemedView } from './themed-view'
-import { ThemedText } from './themed-text'
 import { useDailyPrompt } from '@/hooks/use-daily-prompt'
+import { ThemedText } from './themed-text'
+import { ThemedView } from './themed-view'
 
 export function DailyPromptCard() {
   const { prompt, isLoading } = useDailyPrompt()

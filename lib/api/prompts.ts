@@ -4,7 +4,7 @@
  */
 
 import { executeQuery } from '@/lib/services/sanity/client'
-import { GET_LATEST_DAILY_PROMPT, GET_DAILY_PROMPT_BY_DATE } from '@/lib/services/sanity/queries'
+import { GET_DAILY_PROMPT_BY_DATE, GET_LATEST_DAILY_PROMPT } from '@/lib/services/sanity/queries'
 import type { DailyPrompt } from '@/lib/types'
 
 /**

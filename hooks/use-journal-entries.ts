@@ -3,10 +3,10 @@
  * Custom hook for managing journal entries data
  */
 
-import { useState, useCallback } from 'react'
-import { useFocusEffect } from 'expo-router'
 import { fetchUserJournalEntries } from '@/lib/api/journal'
 import type { JournalEntryListItem } from '@/lib/types'
+import { useFocusEffect } from 'expo-router'
+import { useCallback, useState } from 'react'
 
 interface UseJournalEntriesReturn {
   entries: JournalEntryListItem[]

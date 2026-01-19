@@ -3,15 +3,15 @@
  * Displays a calendar with journal entry markers
  */
 
+import { format } from 'date-fns'
 import React, { useMemo } from 'react'
 import { View } from 'react-native'
 import { Calendar } from 'react-native-calendars'
-import { format } from 'date-fns'
 
-import { ThemedView } from './themed-view'
-import { ThemedText } from './themed-text'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import type { JournalEntryListItem } from '@/lib/types'
+import { ThemedText } from './themed-text'
+import { ThemedView } from './themed-view'
 
 interface CalendarViewProps {
   entries: JournalEntryListItem[]
