@@ -71,3 +71,17 @@ export function formatChatHistory(messages: { text: string; role: 'user' | 'assi
     parts: [{ text: msg.text }],
   }))
 }
+
+export const DAILY_PROMPT_SYSTEM_PROMPT = `Generate a single, thoughtful, and engaging journaling prompt.
+It should be:
+- Open-ended and reflective
+- Encouraging self-discovery, gratitude, or mindfulness
+- Concise (1-2 sentences max)
+- Tone: Warm, supportive, and inspiring
+
+Do NOT include quotes or intro text. Just the prompt itself.`
+
+export const CATEGORIZATION_SYSTEM_PROMPT = `Analyze the journal entry title and content provided.
+Identify 1-3 relevant categories or tags that best describe the main themes (e.g., "Personal Growth", "Career", "Relationships", "Health", "Mindfulness", "Travel", "Creativity").
+Return ONLY a JSON array of strings. Example: ["Personal Growth", "Mindfulness"]
+Do not include markdown formatting or explanation.`

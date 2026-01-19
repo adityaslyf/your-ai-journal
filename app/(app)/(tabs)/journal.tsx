@@ -139,7 +139,7 @@ export default function JournalScreen() {
                       colors={['transparent', isDark ? '#0a0a0a' : '#ffffff']}
                       className="absolute bottom-0 left-0 right-0 h-20"
                     />
-                    <View className="absolute top-3 right-3 bg-black/80 backdrop-blur-md px-3 py-1 rounded-sm border border-white/10">
+                    <View className="absolute top-3 right-3 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
                       <ThemedText className="text-[10px] font-bold text-white tracking-widest uppercase">
                         {format(new Date(entry.createdAt), 'MMM d')}
                       </ThemedText>

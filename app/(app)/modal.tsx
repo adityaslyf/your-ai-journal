@@ -1,3 +1,4 @@
+import { analyzeJournalEntry } from '@/lib/services/gemini/client'
 import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
 import { useRouter } from 'expo-router'
@@ -58,6 +59,18 @@ export default function NewEntryScreen() {
 
     setIsSubmitting(true)
     try {
+      // Analyze entry with AI to generate categories
+      // We do this in parallel with image upload if possible, or before mutation
+      let aiCategories: string[] = []
+      try {
+        console.log('Analyzing entry with AI...')
+        aiCategories = await analyzeJournalEntry(title.trim(), content.trim())
+        console.log('AI Categories:', aiCategories)
+      } catch (aiError) {
+        console.error('AI categorization failed:', aiError)
+        // Continue without categories if AI fails
+      }
+
       let imageAsset = null
       
       if (imageUri) {
@@ -87,6 +100,7 @@ export default function NewEntryScreen() {
               },
             ],
             moodRating: mood,
+            aiCategories: aiCategories,
             userId,
             createdAt: new Date().toISOString(),
           },

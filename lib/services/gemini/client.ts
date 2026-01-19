@@ -5,7 +5,7 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { GEMINI_API_KEY } from '@/lib/constants/sanity'
-import { buildSystemPrompt, formatChatHistory } from './prompts'
+import { buildSystemPrompt, formatChatHistory, DAILY_PROMPT_SYSTEM_PROMPT, CATEGORIZATION_SYSTEM_PROMPT } from './prompts'
 import type { JournalContext } from '@/lib/types'
 
 /**
@@ -17,6 +17,47 @@ function getGeminiClient() {
   }
 
   return new GoogleGenerativeAI(GEMINI_API_KEY)
+}
+
+/**
+ * Generate a daily journaling prompt
+ */
+export async function generateDailyPrompt(): Promise<string> {
+  try {
+    const genAI = getGeminiClient()
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+
+    const result = await model.generateContent(DAILY_PROMPT_SYSTEM_PROMPT)
+    const response = result.response
+    return response.text().trim()
+  } catch (error) {
+    console.error('Gemini generateDailyPrompt error:', error)
+    // Fallback prompt if AI fails
+    return "Reflect on a small moment of joy you experienced today."
+  }
+}
+
+/**
+ * Analyze journal entry to generate categories
+ */
+export async function analyzeJournalEntry(title: string, content: string): Promise<string[]> {
+  try {
+    const genAI = getGeminiClient()
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-2.5-flash',
+      generationConfig: { responseMimeType: "application/json" } 
+    })
+
+    const prompt = `Title: ${title}\nContent: ${content}\n\n${CATEGORIZATION_SYSTEM_PROMPT}`
+    const result = await model.generateContent(prompt)
+    const response = result.response
+    const text = response.text()
+    
+    return JSON.parse(text) as string[]
+  } catch (error) {
+    console.error('Gemini analyzeJournalEntry error:', error)
+    return [] // Return empty array on failure
+  }
 }
 
 /**
